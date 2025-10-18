@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection - private data
+    match /users/{userId} {
+      // Users can read their own data
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Users can update their own data
+      allow update: if request.auth != null && request.auth.uid == userId;
+      
+      // Only authenticated users can create (during registration)
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // Admins can read all users
+      allow read: if request.auth != null && 
+                     exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // Admins can update any user
+      allow update: if request.auth != null && 
+                       exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Members collection - public data for homepage
+    match /members/{memberId} {
+      // Anyone authenticated can read (for homepage display)
+      allow read: if request.auth != null;
+      
+      // Users can create/update their own member profile
+      allow create, update: if request.auth != null && 
+                              (request.auth.uid == memberId || 
+                               request.auth.uid == request.resource.data.userId);
+      
+      // Admins can manage all member profiles
+      allow write: if request.auth != null && 
+                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // Users can delete their own member profile
+      allow delete: if request.auth != null && 
+                       (request.auth.uid == memberId || 
+                        request.auth.uid == resource.data.userId);
+    }
+    
+    // Absences collection - attendance tracking
+    match /absences/{absenceId} {
+      // All authenticated users can read absences
+      allow read: if request.auth != null;
+      
+      // Only admins can create, update, or delete absences
+      allow create, update, delete: if request.auth != null && 
+                                       exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Posts collection - news and achievements
+    match /posts/{postId} {
+      // Anyone can read posts (including unauthenticated for homepage)
+      allow read: if true;
+      
+      // Authenticated users can create posts
+      allow create: if request.auth != null &&
+                       request.resource.data.authorId == request.auth.uid;
+      
+      // Users can update/delete their own posts
+      allow update, delete: if request.auth != null &&
+                               resource.data.authorId == request.auth.uid;
+      
+      // Admins can update/delete any post
+      allow update, delete: if request.auth != null && 
+                               exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}
+
