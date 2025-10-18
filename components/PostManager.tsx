@@ -497,7 +497,7 @@ export default function PostManager() {
             <PartyPopper className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             <p className="text-gray-400 text-lg">No posts yet</p>
             <p className="text-gray-500 text-sm mt-2">
-              Click "Create Post" to share your first update
+              Click &quot;Create Post&quot; to share your first update
             </p>
           </div>
         ) : (
