@@ -15,19 +15,18 @@ export default function CenterLogos() {
       <motion.div
         whileHover={{ scale: 1.1, rotate: 5 }}
         transition={{ duration: 0.3 }}
-        className="relative w-48 h-48 md:w-64 md:h-64"
+        className="relative w-48 h-48 md:w-64 md:h-64 lg:w-72 lg:h-72"
       >
         <div className="absolute inset-0 bg-[#FFD600] rounded-full blur-3xl opacity-30 animate-pulse" />
-        <div className="relative w-full h-full bg-white rounded-full shadow-2xl flex items-center justify-center p-8 border-4 border-[#FFD600]">
-          {/* Placeholder for Enactus Logo */}
-          <div className="text-center">
-            <h2 className="text-4xl md:text-5xl font-bold text-black">
-              ENACTUS
-            </h2>
-            <p className="text-sm md:text-base text-gray-600 mt-2">
-              We see opportunity
-            </p>
-          </div>
+        <div className="relative w-full h-full bg-white rounded-full shadow-2xl flex items-center justify-center p-6 md:p-8 border-4 border-[#FFD600]">
+          <Image
+            src="/assets/logos/enactus_logo.png"
+            alt="Enactus Logo"
+            width={220}
+            height={220}
+            className="object-contain w-full h-full"
+            priority
+          />
         </div>
       </motion.div>
 
@@ -35,19 +34,18 @@ export default function CenterLogos() {
       <motion.div
         whileHover={{ scale: 1.1, rotate: -5 }}
         transition={{ duration: 0.3 }}
-        className="relative w-48 h-48 md:w-64 md:h-64"
+        className="relative w-48 h-48 md:w-64 md:h-64 lg:w-72 lg:h-72"
       >
         <div className="absolute inset-0 bg-black rounded-full blur-3xl opacity-20 animate-pulse" />
-        <div className="relative w-full h-full bg-white rounded-full shadow-2xl flex items-center justify-center p-8 border-4 border-black">
-          {/* Placeholder for ISET Nabeul Logo */}
-          <div className="text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-black">
-              ISET
-            </h2>
-            <p className="text-xl md:text-2xl font-semibold text-[#FFD600]">
-              Nabeul
-            </p>
-          </div>
+        <div className="relative w-full h-full bg-white rounded-full shadow-2xl flex items-center justify-center p-6 md:p-8 border-4 border-black">
+          <Image
+            src="/assets/logos/iset_logo.png"
+            alt="ISET Nabeul Logo"
+            width={220}
+            height={220}
+            className="object-contain w-full h-full"
+            priority
+          />
         </div>
       </motion.div>
     </motion.div>
