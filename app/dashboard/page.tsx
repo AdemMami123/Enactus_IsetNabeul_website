@@ -5,6 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardLayout from "@/components/DashboardLayout";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import {
   User,
   Users,
@@ -18,23 +21,77 @@ import {
 
 export default function DashboardPage() {
   const { userProfile, isAdmin } = useAuth();
+  const [teamMembersCount, setTeamMembersCount] = useState<number>(0);
+  const [eventsThisMonth, setEventsThisMonth] = useState<number>(0);
+  const [profileCompletion, setProfileCompletion] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [userProfile]);
+
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch team members count
+      const membersRef = collection(db, "members");
+      const membersSnapshot = await getDocs(membersRef);
+      setTeamMembersCount(membersSnapshot.size);
+
+      // Fetch events this month
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      
+      const firstDay = firstDayOfMonth.toISOString().split("T")[0];
+      const lastDay = lastDayOfMonth.toISOString().split("T")[0];
+
+      const eventsRef = collection(db, "events");
+      const eventsQuery = query(
+        eventsRef,
+        where("date", ">=", firstDay),
+        where("date", "<=", lastDay)
+      );
+      const eventsSnapshot = await getDocs(eventsQuery);
+      setEventsThisMonth(eventsSnapshot.size);
+
+      // Calculate profile completion
+      if (userProfile) {
+        let completionScore = 0;
+        const fields = [
+          userProfile.displayName,
+          userProfile.email,
+          userProfile.position,
+          userProfile.bio,
+          userProfile.phone,
+          userProfile.photoURL,
+        ];
+        const filledFields = fields.filter(field => field && field.trim() !== "").length;
+        completionScore = Math.round((filledFields / fields.length) * 100);
+        setProfileCompletion(completionScore);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const stats = [
     {
       label: "Profile Completion",
-      value: userProfile?.displayName && userProfile?.position ? "100%" : "50%",
+      value: loading ? "..." : `${profileCompletion}%`,
       icon: User,
       color: "text-blue-400",
     },
     {
       label: "Team Members",
-      value: "10+",
+      value: loading ? "..." : `${teamMembersCount}+`,
       icon: Users,
       color: "text-green-400",
     },
     {
       label: "Events This Month",
-      value: "3",
+      value: loading ? "..." : `${eventsThisMonth}`,
       icon: Calendar,
       color: "text-purple-400",
     },
@@ -52,6 +109,12 @@ export default function DashboardPage() {
       description: "Update your information",
       href: "/dashboard/profile",
       icon: User,
+    },
+    {
+      title: "Manage Agenda",
+      description: "View events and tasks",
+      href: "/dashboard/agenda",
+      icon: Calendar,
     },
     {
       title: "Create Post",

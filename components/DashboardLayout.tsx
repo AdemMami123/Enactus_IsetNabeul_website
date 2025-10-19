@@ -15,6 +15,7 @@ import {
   X,
   LogOut,
   PartyPopper,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -38,6 +39,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       name: "Profile",
       href: "/dashboard/profile",
       icon: User,
+      adminOnly: false,
+    },
+    {
+      name: "Agenda",
+      href: "/dashboard/agenda",
+      icon: Calendar,
       adminOnly: false,
     },
     {
