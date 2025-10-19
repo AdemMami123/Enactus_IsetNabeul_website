@@ -34,6 +34,16 @@ import {
 import { Post, PostType, CreatePostData } from "@/types/post";
 import Image from "next/image";
 
+// Helper function to ensure URL has protocol
+const ensureHttps = (url: string): string => {
+  if (!url) return "";
+  const trimmedUrl = url.trim();
+  if (trimmedUrl.startsWith("http://") || trimmedUrl.startsWith("https://")) {
+    return trimmedUrl;
+  }
+  return `https://${trimmedUrl}`;
+};
+
 export default function PostManager() {
   const { userProfile } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -566,7 +576,7 @@ export default function PostManager() {
                   {post.links.map((link, index) => (
                     <a
                       key={index}
-                      href={link}
+                      href={ensureHttps(link)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 text-[#FFD600] hover:text-[#FFD600]/80 text-xs sm:text-sm break-all"

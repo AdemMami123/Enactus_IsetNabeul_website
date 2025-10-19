@@ -21,6 +21,16 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+// Helper function to ensure URL has protocol
+const ensureHttps = (url: string): string => {
+  if (!url) return "";
+  const trimmedUrl = url.trim();
+  if (trimmedUrl.startsWith("http://") || trimmedUrl.startsWith("https://")) {
+    return trimmedUrl;
+  }
+  return `https://${trimmedUrl}`;
+};
+
 export default function PostsSection() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -182,7 +192,7 @@ export default function PostsSection() {
                 {post.links && post.links.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-gray-700">
                     <a
-                      href={post.links[0]}
+                      href={ensureHttps(post.links[0])}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 text-[#FFD600] hover:text-[#FFD600]/80 text-xs sm:text-sm group"

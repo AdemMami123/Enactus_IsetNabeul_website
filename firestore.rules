@@ -26,8 +26,8 @@ service cloud.firestore {
     
     // Members collection - public data for homepage
     match /members/{memberId} {
-      // Anyone authenticated can read (for homepage display)
-      allow read: if request.auth != null;
+      // Anyone can read member profiles (for homepage floating members)
+      allow read: if true;
       
       // Users can create/update their own member profile
       allow create, update: if request.auth != null && 
