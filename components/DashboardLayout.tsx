@@ -16,6 +16,7 @@ import {
   LogOut,
   PartyPopper,
   Calendar,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -57,6 +58,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       name: "Absence List",
       href: "/dashboard/absence",
       icon: UserCheck,
+      adminOnly: false,
+    },
+    {
+      name: "Team",
+      href: "/team",
+      icon: Users,
       adminOnly: false,
     },
     {

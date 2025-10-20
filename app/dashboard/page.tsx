@@ -131,7 +131,7 @@ export default function DashboardPage() {
     {
       title: "View Team",
       description: "See all Enactus members",
-      href: "/",
+      href: "/team",
       icon: Users,
     },
     ...(isAdmin

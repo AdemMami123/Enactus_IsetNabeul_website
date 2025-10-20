@@ -104,7 +104,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </DialogTitle>
           <DialogDescription className="text-gray-400">
             {isLogin
-              ? "Sign in to access your account"
+              ? "Sign in to access your account,This is only for the Enactus members."
               : "Create an account to get started"}
           </DialogDescription>
         </DialogHeader>
