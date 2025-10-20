@@ -13,6 +13,7 @@ import {
   orderBy,
   where,
   Timestamp,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,6 +28,7 @@ import {
   Trash2,
   Plus,
   X,
+  Save,
 } from "lucide-react";
 
 interface User {
@@ -49,6 +51,12 @@ interface Absence {
   createdAt: Date;
 }
 
+interface AttendanceStatus {
+  userId: string;
+  status: "present" | "absent" | "";
+  reason?: string;
+}
+
 export default function AbsenceManagement() {
   const { userProfile, isAdmin } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
@@ -65,11 +73,35 @@ export default function AbsenceManagement() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  
+  // New state for bulk attendance marking
+  const [attendanceMap, setAttendanceMap] = useState<Map<string, AttendanceStatus>>(new Map());
+  const [bulkMeetingDate, setBulkMeetingDate] = useState(new Date().toISOString().split("T")[0]);
+  const [savingAttendance, setSavingAttendance] = useState(false);
 
   useEffect(() => {
     fetchData();
+    // Initialize attendance map
+    const initialMap = new Map<string, AttendanceStatus>();
+    users.forEach(user => {
+      initialMap.set(user.id, { userId: user.id, status: "", reason: "" });
+    });
+    setAttendanceMap(initialMap);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    // Update attendance map when users change
+    if (users.length > 0) {
+      const newMap = new Map<string, AttendanceStatus>();
+      users.forEach(user => {
+        const existing = attendanceMap.get(user.id);
+        newMap.set(user.id, existing || { userId: user.id, status: "", reason: "" });
+      });
+      setAttendanceMap(newMap);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [users]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -212,6 +244,86 @@ export default function AbsenceManagement() {
     setReason("");
   };
 
+  const handleAttendanceChange = (userId: string, status: "present" | "absent" | "") => {
+    const newMap = new Map(attendanceMap);
+    const current = newMap.get(userId) || { userId, status: "", reason: "" };
+    newMap.set(userId, { ...current, status });
+    setAttendanceMap(newMap);
+  };
+
+  const handleReasonChange = (userId: string, reason: string) => {
+    const newMap = new Map(attendanceMap);
+    const current = newMap.get(userId) || { userId, status: "", reason: "" };
+    newMap.set(userId, { ...current, reason });
+    setAttendanceMap(newMap);
+  };
+
+  const handleBulkSaveAttendance = async () => {
+    if (!isAdmin || !bulkMeetingDate) {
+      setMessage({ type: "error", text: "Please select a meeting date" });
+      return;
+    }
+
+    setSavingAttendance(true);
+    try {
+      const batch = writeBatch(db);
+      let absentCount = 0;
+
+      // Only process members marked as absent
+      attendanceMap.forEach((attendance, userId) => {
+        if (attendance.status === "absent") {
+          const user = users.find(u => u.id === userId);
+          if (user) {
+            const absenceRef = doc(collection(db, "absences"));
+            batch.set(absenceRef, {
+              userId: user.id,
+              userName: user.displayName,
+              userEmail: user.email,
+              userPosition: user.position,
+              meetingDate: Timestamp.fromDate(new Date(bulkMeetingDate)),
+              reason: attendance.reason || "No reason provided",
+              markedBy: userProfile?.uid,
+              markedByName: userProfile?.displayName || userProfile?.email,
+              createdAt: Timestamp.now(),
+            });
+            absentCount++;
+          }
+        }
+      });
+
+      if (absentCount === 0) {
+        setMessage({ type: "error", text: "Please mark at least one member as absent" });
+        setSavingAttendance(false);
+        return;
+      }
+
+      await batch.commit();
+      
+      setMessage({ 
+        type: "success", 
+        text: `Successfully saved attendance! ${absentCount} absence(s) recorded.` 
+      });
+      
+      // Reset attendance map
+      const resetMap = new Map<string, AttendanceStatus>();
+      users.forEach(user => {
+        resetMap.set(user.id, { userId: user.id, status: "", reason: "" });
+      });
+      setAttendanceMap(resetMap);
+      
+      // Refresh data
+      await fetchData();
+    } catch (error: any) {
+      console.error("Error saving attendance:", error);
+      setMessage({ 
+        type: "error", 
+        text: error.message || "Failed to save attendance" 
+      });
+    } finally {
+      setSavingAttendance(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -234,15 +346,7 @@ export default function AbsenceManagement() {
             <p className="text-gray-400">Track member attendance</p>
           </div>
         </div>
-        {isAdmin && (
-          <Button
-            onClick={() => setShowMarkAbsence(true)}
-            className="bg-[#FFD600] text-black hover:bg-[#FFD600]/90"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Mark Absence
-          </Button>
-        )}
+        
       </div>
 
       {/* Message */}
@@ -401,9 +505,35 @@ export default function AbsenceManagement() {
         </div>
       </div>
 
-      {/* Members Absence Stats */}
+      {/* Members Absence Stats with Attendance Marking */}
       <div className="bg-gray-800 border border-[#FFD600]/20 rounded-lg p-6">
-        <h2 className="text-xl font-bold text-white mb-4">Member Statistics</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-white">Member Statistics & Attendance</h2>
+          {isAdmin && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="bulkDate" className="text-white text-sm">
+                  Meeting Date:
+                </Label>
+                <Input
+                  id="bulkDate"
+                  type="date"
+                  value={bulkMeetingDate}
+                  onChange={(e) => setBulkMeetingDate(e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white w-40"
+                />
+              </div>
+              <Button
+                onClick={handleBulkSaveAttendance}
+                disabled={savingAttendance}
+                className="bg-[#FFD600] text-black hover:bg-[#FFD600]/90"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {savingAttendance ? "Saving..." : "Save Attendance"}
+              </Button>
+            </div>
+          )}
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -420,42 +550,94 @@ export default function AbsenceManagement() {
                 <th className="text-center py-3 px-4 text-gray-400 font-semibold">
                   Total Absences
                 </th>
+                {isAdmin && (
+                  <>
+                    <th className="text-center py-3 px-4 text-gray-400 font-semibold">
+                      Attendance
+                    </th>
+                    <th className="text-left py-3 px-4 text-gray-400 font-semibold">
+                      Reason (if absent)
+                    </th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors"
-                >
-                  <td className="py-3 px-4 text-white">{user.displayName}</td>
-                  <td className="py-3 px-4 text-gray-300">{user.position}</td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-                        user.role === "admin"
-                          ? "bg-purple-500/20 text-purple-400"
-                          : "bg-blue-500/20 text-blue-400"
-                      }`}
-                    >
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
-                        user.absenceCount === 0
-                          ? "bg-green-500/20 text-green-400"
-                          : user.absenceCount < 3
-                          ? "bg-yellow-500/20 text-yellow-400"
-                          : "bg-red-500/20 text-red-400"
-                      }`}
-                    >
-                      {user.absenceCount}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {users.map((user) => {
+                const attendance = attendanceMap.get(user.id);
+                return (
+                  <tr
+                    key={user.id}
+                    className="border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors"
+                  >
+                    <td className="py-3 px-4 text-white">{user.displayName}</td>
+                    <td className="py-3 px-4 text-gray-300">{user.position}</td>
+                    <td className="py-3 px-4">
+                      <span
+                        className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                          user.role === "admin"
+                            ? "bg-purple-500/20 text-purple-400"
+                            : "bg-blue-500/20 text-blue-400"
+                        }`}
+                      >
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
+                          user.absenceCount === 0
+                            ? "bg-green-500/20 text-green-400"
+                            : user.absenceCount < 3
+                            ? "bg-yellow-500/20 text-yellow-400"
+                            : "bg-red-500/20 text-red-400"
+                        }`}
+                      >
+                        {user.absenceCount}
+                      </span>
+                    </td>
+                    {isAdmin && (
+                      <>
+                        <td className="py-3 px-4 text-center">
+                          <select
+                            value={attendance?.status || ""}
+                            onChange={(e) =>
+                              handleAttendanceChange(
+                                user.id,
+                                e.target.value as "present" | "absent" | ""
+                              )
+                            }
+                            className={`bg-gray-700 border rounded-md px-3 py-1.5 text-sm font-semibold ${
+                              attendance?.status === "present"
+                                ? "border-green-500 text-green-400"
+                                : attendance?.status === "absent"
+                                ? "border-red-500 text-red-400"
+                                : "border-gray-600 text-gray-400"
+                            }`}
+                          >
+                            <option value="">Not Marked</option>
+                            <option value="present">Present</option>
+                            <option value="absent">Absent</option>
+                          </select>
+                        </td>
+                        <td className="py-3 px-4">
+                          {attendance?.status === "absent" && (
+                            <input
+                              type="text"
+                              value={attendance?.reason || ""}
+                              onChange={(e) =>
+                                handleReasonChange(user.id, e.target.value)
+                              }
+                              placeholder="Enter reason..."
+                              className="w-full bg-gray-700 border border-gray-600 text-white rounded px-2 py-1 text-sm focus:outline-none focus:border-[#FFD600]"
+                            />
+                          )}
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
