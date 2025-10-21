@@ -29,6 +29,12 @@ export default function ProtectedRoute({
       return;
     }
 
+    // Check if user account is approved
+    if (requireAuth && userProfile && userProfile.accountStatus !== "approved") {
+      router.push(redirectTo);
+      return;
+    }
+
     // If specific roles are required, check if user has the right role
     if (allowedRoles && userProfile) {
       if (!allowedRoles.includes(userProfile.role)) {
@@ -52,6 +58,11 @@ export default function ProtectedRoute({
 
   // If not authenticated when required, don't render children
   if (requireAuth && !user) {
+    return null;
+  }
+
+  // If account is not approved, don't render children
+  if (requireAuth && userProfile && userProfile.accountStatus !== "approved") {
     return null;
   }
 

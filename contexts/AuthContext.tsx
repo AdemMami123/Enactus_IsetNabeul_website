@@ -57,7 +57,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           uid,
           email: data.email,
           role: data.role || "member",
+          accountStatus: data.accountStatus || "pending",
           displayName: data.displayName,
+          position: data.position,
+          bio: data.bio,
+          phone: data.phone,
           photoURL: data.photoURL,
           createdAt: data.createdAt?.toDate() || new Date(),
         } as UserProfile;
@@ -178,12 +182,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Listen to auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      if (user) {
-        const profile = await fetchUserProfile(user.uid);
-        setUserProfile(profile);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const profile = await fetchUserProfile(firebaseUser.uid);
+        
+        if (profile) {
+          // Always set the user and profile when Firebase user exists
+          // The login function already handles approval checks
+          setUser(firebaseUser);
+          setUserProfile(profile);
+        } else {
+          // Profile not found
+          setUser(null);
+          setUserProfile(null);
+        }
       } else {
+        setUser(null);
         setUserProfile(null);
       }
       setLoading(false);
