@@ -113,14 +113,14 @@ export default function FloatingMembers() {
               }}
               whileHover={{
                 scale: 1.2,
-                zIndex: 10,
+                zIndex: 50,
               }}
               transition={{
                 duration: 3 + index * 0.5,
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
-              className="relative group"
+              className="relative group cursor-pointer"
             >
               <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden shadow-2xl border-4 border-[#FFD600] group-hover:border-white transition-all duration-300">
                 <Image
@@ -136,13 +136,16 @@ export default function FloatingMembers() {
               <AnimatePresence>
                 {hoveredMember === member.id && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-4 py-2 bg-black/90 backdrop-blur-sm rounded-lg border border-[#FFD600]/50 whitespace-nowrap z-50 pointer-events-none"
+                    initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 px-4 py-2.5 bg-black/95 backdrop-blur-md rounded-lg border-2 border-[#FFD600] shadow-lg shadow-[#FFD600]/20 whitespace-nowrap z-[100] pointer-events-none"
                   >
-                    <p className="text-white font-semibold text-sm">{member.name}</p>
-                    <p className="text-[#FFD600] text-xs">{member.position}</p>
+                    <p className="text-white font-bold text-sm mb-0.5">{member.name}</p>
+                    <p className="text-[#FFD600] text-xs font-medium">{member.position}</p>
+                    {/* Arrow */}
+                    <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-[#FFD600]"></div>
                   </motion.div>
                 )}
               </AnimatePresence>

@@ -19,6 +19,8 @@ import {
   FileText,
   Newspaper,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 // Helper function to ensure URL has protocol
@@ -34,10 +36,23 @@ const ensureHttps = (url: string): string => {
 export default function PostsSection() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchPosts();
   }, []);
+
+  const toggleExpand = (postId: string) => {
+    setExpandedPosts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(postId)) {
+        newSet.delete(postId);
+      } else {
+        newSet.add(postId);
+      }
+      return newSet;
+    });
+  };
 
   const fetchPosts = async () => {
     try {
@@ -171,9 +186,31 @@ export default function PostsSection() {
                   {post.title}
                 </h3>
 
-                <p className="text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3">
-                  {post.description}
-                </p>
+                <div className="mb-3 sm:mb-4">
+                  <p className={`text-gray-400 text-xs sm:text-sm ${
+                    expandedPosts.has(post.id) ? '' : 'line-clamp-3'
+                  }`}>
+                    {post.description}
+                  </p>
+                  
+                  {/* Show more/less button for long descriptions */}
+                  {post.description.length > 150 && (
+                    <button
+                      onClick={() => toggleExpand(post.id)}
+                      className="mt-1 text-[#FFD600] hover:text-[#FFD600]/80 text-xs flex items-center gap-1 transition-colors"
+                    >
+                      {expandedPosts.has(post.id) ? (
+                        <>
+                          Show less <ChevronUp className="w-3 h-3" />
+                        </>
+                      ) : (
+                        <>
+                          Show more <ChevronDown className="w-3 h-3" />
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
 
                 {/* Meta Info */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 text-xs text-gray-500">
