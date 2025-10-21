@@ -185,29 +185,49 @@ export default function PostManager() {
       // Filter out empty links
       const validLinks = links.filter((link) => link.trim() !== "");
 
-      const postData = {
+      // Build postData with only defined values
+      const postData: any = {
         title,
         description,
         type,
-        imageUrl: imageUrl || undefined,
-        links: validLinks.length > 0 ? validLinks : undefined,
-        eventDate: eventDate ? Timestamp.fromDate(new Date(eventDate)) : undefined,
         authorId: userProfile?.uid || "",
         authorName: userProfile?.displayName || userProfile?.email || "Unknown",
         authorEmail: userProfile?.email || "",
       };
 
+      // Only add optional fields if they have valid values
+      if (imageUrl) {
+        postData.imageUrl = imageUrl;
+      }
+      
+      if (validLinks.length > 0) {
+        postData.links = validLinks;
+      }
+      
+      if (eventDate) {
+        postData.eventDate = Timestamp.fromDate(new Date(eventDate));
+      }
+
+      // Helper function to remove undefined values
+      const removeUndefined = (obj: any) => {
+        return Object.fromEntries(
+          Object.entries(obj).filter(([_, value]) => value !== undefined)
+        );
+      };
+
+      const cleanPostData = removeUndefined(postData);
+
       if (editingPost) {
         // Update existing post
         await updateDoc(doc(db, "posts", editingPost.id), {
-          ...postData,
+          ...cleanPostData,
           updatedAt: Timestamp.now(),
         });
         setMessage({ type: "success", text: "Post updated successfully!" });
       } else {
         // Create new post
         await addDoc(collection(db, "posts"), {
-          ...postData,
+          ...cleanPostData,
           createdAt: Timestamp.now(),
         });
         setMessage({ type: "success", text: "Post created successfully!" });
