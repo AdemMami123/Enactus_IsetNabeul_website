@@ -16,6 +16,7 @@ import {
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
 import { Event, EventFormData } from "@/types/event";
+import { sendAgendaNotification } from "@/lib/emailService";
 import {
   Calendar,
   Plus,
@@ -78,6 +79,52 @@ export default function AgendaManager() {
       };
 
       await addDoc(collection(db, "events"), newEvent);
+      
+      // Send email notifications to all members via API route
+      try {
+        // Fetch all users/members from Firestore (client-side)
+        const usersRef = collection(db, "users");
+        const usersSnapshot = await getDocs(usersRef);
+        
+        const members: Array<{ email: string; name: string }> = [];
+        usersSnapshot.forEach((doc) => {
+          const userData = doc.data();
+          if (userData.email && userData.displayName) {
+            members.push({
+              email: userData.email,
+              name: userData.displayName,
+            });
+          }
+        });
+
+        if (members.length > 0) {
+          const response = await fetch("/api/send-agenda-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              agendaTitle: eventData.title,
+              agendaDescription: eventData.description,
+              eventDate: eventData.date,
+              members: members,
+            }),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            console.log(`✅ Sent emails to ${result.successCount} members`);
+          } else {
+            console.error("⚠️ Error sending agenda notifications:", result.message);
+          }
+        } else {
+          console.log("⚠️ No members found to notify");
+        }
+      } catch (emailError) {
+        console.error("⚠️ Error sending agenda notifications:", emailError);
+        // Don't fail the whole operation if emails fail
+      }
+
       await fetchEvents();
       setShowAddModal(false);
     } catch (error) {

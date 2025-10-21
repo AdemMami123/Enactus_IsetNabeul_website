@@ -177,7 +177,7 @@ export default function AbsenceManagement() {
     if (!selectedUser || !isAdmin) return;
 
     try {
-      await addDoc(collection(db, "absences"), {
+      const absenceData = {
         userId: selectedUser.id,
         userName: selectedUser.displayName,
         userEmail: selectedUser.email,
@@ -187,7 +187,35 @@ export default function AbsenceManagement() {
         markedBy: userProfile?.uid,
         markedByName: userProfile?.displayName || userProfile?.email,
         createdAt: Timestamp.now(),
-      });
+      };
+
+      await addDoc(collection(db, "absences"), absenceData);
+
+      // Send email notification via API route
+      try {
+        const response = await fetch("/api/send-absence-email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            memberEmail: selectedUser.email,
+            memberName: selectedUser.displayName,
+            meetingDate: meetingDate,
+            reason: reason || "No reason provided",
+          }),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          console.log("✅ Email notification sent to", selectedUser.email);
+        } else {
+          console.error("⚠️ Failed to send email notification:", result.message);
+        }
+      } catch (emailError) {
+        console.error("⚠️ Failed to send email notification:", emailError);
+        // Don't fail the whole operation if email fails
+      }
 
       setMessage({ type: "success", text: "Absence marked successfully!" });
       resetForm();
@@ -268,6 +296,7 @@ export default function AbsenceManagement() {
     try {
       const batch = writeBatch(db);
       let absentCount = 0;
+      const absentMembers: Array<{ email: string; name: string; reason: string }> = [];
 
       // Only process members marked as absent
       attendanceMap.forEach((attendance, userId) => {
@@ -287,6 +316,11 @@ export default function AbsenceManagement() {
               createdAt: Timestamp.now(),
             });
             absentCount++;
+            absentMembers.push({
+              email: user.email,
+              name: user.displayName,
+              reason: attendance.reason || "No reason provided"
+            });
           }
         }
       });
@@ -298,6 +332,38 @@ export default function AbsenceManagement() {
       }
 
       await batch.commit();
+      
+      // Send email notifications to all absent members via API
+      try {
+        for (const member of absentMembers) {
+          try {
+            const response = await fetch("/api/send-absence-email", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                memberEmail: member.email,
+                memberName: member.name,
+                meetingDate: bulkMeetingDate,
+                reason: member.reason,
+              }),
+            });
+
+            const result = await response.json();
+            if (result.success) {
+              console.log("✅ Email sent to", member.email);
+            } else {
+              console.error("⚠️ Failed to send email to", member.email, result.message);
+            }
+          } catch (emailError) {
+            console.error("⚠️ Failed to send email to", member.email, emailError);
+          }
+        }
+      } catch (emailError) {
+        console.error("⚠️ Error sending email notifications:", emailError);
+        // Don't fail the whole operation if emails fail
+      }
       
       setMessage({ 
         type: "success", 
