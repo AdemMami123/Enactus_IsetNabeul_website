@@ -87,7 +87,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -97,12 +97,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       )}
 
       {/* Sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{
-          x: sidebarOpen ? 0 : "-100%",
-        }}
-        className="fixed top-0 left-0 z-50 h-full w-64 bg-gray-800/95 backdrop-blur-sm border-r border-[#FFD600]/20 lg:translate-x-0 transition-transform duration-300"
+      <aside
+        className={`fixed top-0 left-0 z-50 h-full w-64 bg-gray-800/95 backdrop-blur-sm border-r border-[#FFD600]/20 transition-transform duration-300 lg:static lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         {/* Logo/Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
@@ -176,10 +174,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <span>Logout</span>
           </button>
         </div>
-      </motion.aside>
+      </aside>
 
       {/* Main Content */}
-      <div className="lg:pl-64">
+      <div className="flex-1 flex flex-col min-h-screen">
         {/* Mobile Header */}
         <header className="lg:hidden sticky top-0 z-30 bg-gray-800/95 backdrop-blur-sm border-b border-gray-700 px-4 py-3">
           <div className="flex items-center justify-between">
@@ -195,7 +193,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <main className="min-h-screen p-0">{children}</main>
+        <main className="flex-1 p-0">{children}</main>
       </div>
     </div>
   );

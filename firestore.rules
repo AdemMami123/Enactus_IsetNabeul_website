@@ -4,24 +4,26 @@ service cloud.firestore {
     
     // Users collection - private data
     match /users/{userId} {
-      // Users can read their own data
-      allow read: if request.auth != null && request.auth.uid == userId;
-      
-      // Users can update their own data
-      allow update: if request.auth != null && request.auth.uid == userId;
-      
-      // Only authenticated users can create (during registration)
+      // Allow user to create their own document during registration
       allow create: if request.auth != null && request.auth.uid == userId;
       
-      // Admins can read all users
-      allow read: if request.auth != null && 
-                     exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      // Users can read their own data
+      allow get: if request.auth != null && request.auth.uid == userId;
       
-      // Admins can update any user
-      allow update: if request.auth != null && 
-                       exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      // Users can update their own data (but not role or accountStatus)
+      allow update: if request.auth != null && request.auth.uid == userId &&
+                       !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'accountStatus']);
+      
+      // Any authenticated user can list/query approved users (for team page)
+      allow list: if request.auth != null;
+      
+      // Any authenticated user can read approved user documents (for team page)
+      allow get: if request.auth != null && resource.data.accountStatus == 'approved';
+      
+      // Admins can do everything
+      allow read, write: if request.auth != null && 
+                             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
     // Members collection - public data for homepage

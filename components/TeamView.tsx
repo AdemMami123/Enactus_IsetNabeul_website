@@ -58,19 +58,22 @@ export default function TeamView() {
         
         // Only show approved users
         if (userData.accountStatus === "approved") {
+          const memberRole = userData.role?.toLowerCase() || "member";
           teamData.push({
             id: userDoc.id,
             userId: userDoc.id,
             name: userData.displayName || "No Name",
             email: userData.email || "",
             position: userData.position || "Member",
-            role: userData.role || "member",
+            role: memberRole,
             photoURL: userData.photoURL || "",
             bio: userData.bio || "No bio available",
             phone: userData.phone || "",
           });
         }
       }
+
+      console.log("Fetched team members:", teamData.length, teamData);
 
       // Sort by role (admins first) then by name
       teamData.sort((a, b) => {
@@ -122,6 +125,7 @@ export default function TeamView() {
 
   return (
     <div className="space-y-6">
+      
       {/* Header */}
       <div className="text-center">
         <motion.div

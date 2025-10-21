@@ -1,11 +1,15 @@
 import TeamView from "@/components/TeamView";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import DashboardLayout from "@/components/DashboardLayout";
 
 export default function TeamPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800">
-      <div className="container mx-auto px-4 py-12">
-        <TeamView />
-      </div>
-    </main>
+    <ProtectedRoute requireAuth={true}>
+      <DashboardLayout>
+        <div className="container mx-auto px-4 py-12">
+          <TeamView />
+        </div>
+      </DashboardLayout>
+    </ProtectedRoute>
   );
 }
