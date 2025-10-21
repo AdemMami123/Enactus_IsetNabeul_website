@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import CenterLogos from "@/components/CenterLogos";
 import FloatingMembers from "@/components/FloatingMembers";
 import PostsSection from "@/components/PostsSection";
+import SocialMediaBar from "@/components/SocialMediaBar";
 
 export default function Home() {
   return (
@@ -17,6 +18,9 @@ export default function Home() {
 
       {/* Navbar */}
       <Navbar />
+
+      {/* Social Media Bar */}
+      <SocialMediaBar />
 
       {/* Floating Members */}
       <FloatingMembers />
