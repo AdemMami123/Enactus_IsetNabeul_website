@@ -198,14 +198,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
           <div className="text-center">
             <button
-              type="button"
-              onClick={toggleMode}
-              className="text-sm text-gray-400 hover:text-[#FFD600] transition-colors"
-            >
-              {isLogin
-                ? "Don't have an account? Sign up"
-                : "Already have an account? Sign in"}
-            </button>
+  type="button"
+  onClick={toggleMode}
+  className="text-sm text-gray-300 hover:text-[#FFD600] font-medium transition-colors mt-2"
+>
+  {isLogin
+    ? "👉 New here? Create an account"
+    : "🔑 Already registered? Log in instead"}
+</button>
+
           </div>
         </form>
       </DialogContent>

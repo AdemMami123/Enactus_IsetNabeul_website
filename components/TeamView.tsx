@@ -22,7 +22,7 @@ interface TeamMember {
   userId: string;
   name: string;
   email: string;
-  position: string;
+  bureauRole: string;
   role: string;
   photoURL: string;
   bio: string;
@@ -64,7 +64,7 @@ export default function TeamView() {
             userId: userDoc.id,
             name: userData.displayName || "No Name",
             email: userData.email || "",
-            position: userData.position || "Member",
+            bureauRole: userData.bureauRole || "Basic Member",
             role: memberRole,
             photoURL: userData.photoURL || "",
             bio: userData.bio || "No bio available",
@@ -99,7 +99,7 @@ export default function TeamView() {
       filtered = filtered.filter(
         (member) =>
           member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          member.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          member.bureauRole.toLowerCase().includes(searchTerm.toLowerCase()) ||
           member.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -283,7 +283,7 @@ export default function TeamView() {
                 
                 <div className="flex items-center gap-1 text-[#FFD600] mb-2">
                   <Briefcase className="w-3 h-3 flex-shrink-0" />
-                  <p className="text-xs font-medium line-clamp-1">{member.position}</p>
+                  <p className="text-xs font-medium line-clamp-1">{member.bureauRole}</p>
                 </div>
 
                 <p className="text-gray-400 text-xs mb-2 line-clamp-2 min-h-[2rem]">
@@ -382,7 +382,7 @@ export default function TeamView() {
                 
                 <div className="flex items-center gap-2 text-[#FFD600] mb-6">
                   <Briefcase className="w-5 h-5" />
-                  <p className="text-lg font-medium">{selectedMember.position}</p>
+                  <p className="text-lg font-medium">{selectedMember.bureauRole}</p>
                 </div>
 
                 <div className="space-y-6">

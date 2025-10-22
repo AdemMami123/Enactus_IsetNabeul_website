@@ -10,7 +10,7 @@ interface Member {
   id: string;
   name: string;
   photoURL: string;
-  position: string;
+  bureauRole: string;
   positionCoords: { x: number; y: number };
 }
 
@@ -52,7 +52,7 @@ export default function FloatingMembers() {
             id: doc.id,
             name: data.name,
             photoURL: data.photoURL,
-            position: data.position || "Member",
+            bureauRole: data.position || "Basic Member", // Use position field from members collection
             positionCoords: POSITIONS[index % POSITIONS.length],
           });
           index++;
@@ -143,7 +143,7 @@ export default function FloatingMembers() {
                     className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 px-4 py-2.5 bg-black/95 backdrop-blur-md rounded-lg border-2 border-[#FFD600] shadow-lg shadow-[#FFD600]/20 whitespace-nowrap z-[100] pointer-events-none"
                   >
                     <p className="text-white font-bold text-sm mb-0.5">{member.name}</p>
-                    <p className="text-[#FFD600] text-xs font-medium">{member.position}</p>
+                    <p className="text-[#FFD600] text-xs font-medium">{member.bureauRole}</p>
                     {/* Arrow */}
                     <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-[#FFD600]"></div>
                   </motion.div>

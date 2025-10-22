@@ -84,6 +84,21 @@
 - ✅ Added to sidebar navigation and dashboard quick links
 - ✅ Fetches from users collection (approved members only)
 
+### Bureau Role Management System (COMPLETED)
+- ✅ 10 organizational bureau roles (Team Leader, Co-Leader, Partnerships Manager, Finance Manager, R&D Manager, HR Manager, Operations Manager, Marketing & Media Manager, Project Manager, Basic Member)
+- ✅ BureauRole type added to AuthContext with full type safety
+- ✅ Separate from authentication roles (admin/member remain unchanged)
+- ✅ Default "Basic Member" role assigned to all new users
+- ✅ Profile page displays bureau role (read-only for users)
+- ✅ Admin panel enhanced with bureau role management
+- ✅ Inline editing of bureau roles (admin only)
+- ✅ Bureau role filtering in admin panel
+- ✅ Color-coded role badges for visual clarity
+- ✅ BureauRoleManager component for role updates
+- ✅ Backward compatible with existing users
+- ✅ No changes to Firestore security rules required
+- ✅ Full documentation in BUREAU_ROLE_SYSTEM.md
+
 ## Design System
 - Primary Color: #FFD600 (Enactus Yellow)
 - Secondary Color: #000000 (Black)
@@ -101,7 +116,7 @@ Member images are fetched dynamically from Firestore members collection.
 Profile photos uploaded to Cloudinary (cloud: dxblaolor, preset: enactus_members).
 
 ## Firestore Collections
-- `users/{uid}`: Private user data (email, role, displayName, position, bio, phone, photoURL)
+- `users/{uid}`: Private user data (email, role, bureauRole, displayName, position, bio, phone, photoURL)
 - `members/{uid}`: Public member data for homepage (name, photoURL, position, userId)
 - `absences/{absenceId}`: Absence tracking (userId, userName, meetingDate, reason, markedBy)
 

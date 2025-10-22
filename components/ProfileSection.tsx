@@ -15,7 +15,6 @@ interface MemberProfile {
   displayName: string;
   bio: string;
   photoURL: string;
-  position: string;
   phone: string;
 }
 
@@ -25,7 +24,6 @@ export default function ProfileSection() {
     displayName: "",
     bio: "",
     photoURL: "",
-    position: "",
     phone: "",
   });
   const [loading, setLoading] = useState(false);
@@ -48,7 +46,6 @@ export default function ProfileSection() {
           displayName: data.displayName || "",
           bio: data.bio || "",
           photoURL: data.photoURL || "",
-          position: data.position || "",
           phone: data.phone || "",
         });
       }
@@ -122,7 +119,6 @@ export default function ProfileSection() {
         displayName: profile.displayName,
         bio: profile.bio,
         photoURL: profile.photoURL,
-        position: profile.position,
         phone: profile.phone,
         updatedAt: new Date(),
       });
@@ -133,7 +129,7 @@ export default function ProfileSection() {
         name: profile.displayName,
         email: userProfile?.email,
         photoURL: profile.photoURL,
-        position: profile.position,
+        position: userProfile?.bureauRole || "Basic Member", // Use bureau role instead
         role: userProfile?.role,
         updatedAt: new Date(),
       };
@@ -238,6 +234,27 @@ export default function ProfileSection() {
           </div>
         </div>
 
+        {/* Bureau Role (Read-only) */}
+        <div className="bg-yellow-900/10 border border-[#FFD600]/30 rounded-lg p-4">
+          <Label className="text-gray-400 flex items-center gap-2 mb-2">
+            <Shield className="w-4 h-4 text-[#FFD600]" />
+            Bureau Role
+          </Label>
+          <div className="flex items-center gap-2">
+            <Input
+              value={userProfile?.bureauRole || "Basic Member"}
+              disabled
+              className="bg-gray-700 border-gray-600 text-white font-semibold"
+            />
+            <div className="text-xs text-gray-400 italic">
+              (Contact admin to update)
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Your organizational position within Enactus ISET Nabeul. Only admins can modify this field.
+          </p>
+        </div>
+
         {/* Editable Fields */}
         <div className="space-y-4">
           <div>
@@ -253,21 +270,6 @@ export default function ProfileSection() {
               placeholder="Your full name"
               className="bg-gray-700 border-gray-600 text-white mt-1"
               required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="position" className="text-white">
-              Position
-            </Label>
-            <Input
-              id="position"
-              value={profile.position}
-              onChange={(e) =>
-                setProfile({ ...profile, position: e.target.value })
-              }
-              placeholder="e.g., President, Vice President, Member"
-              className="bg-gray-700 border-gray-600 text-white mt-1"
             />
           </div>
 

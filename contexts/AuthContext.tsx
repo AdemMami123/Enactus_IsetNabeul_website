@@ -14,14 +14,25 @@ import { auth, db } from "@/lib/firebase";
 
 export type UserRole = "admin" | "member";
 export type AccountStatus = "pending" | "approved" | "rejected";
+export type BureauRole = 
+  | "Team Leader"
+  | "Co-Leader"
+  | "Partnerships Manager"
+  | "Finance Manager"
+  | "R&D Manager"
+  | "HR Manager"
+  | "Operations Manager"
+  | "Marketing & Media Manager"
+  | "Project Manager"
+  | "Basic Member";
 
 export interface UserProfile {
   uid: string;
   email: string;
   role: UserRole;
   accountStatus: AccountStatus;
+  bureauRole?: BureauRole;
   displayName?: string;
-  position?: string;
   bio?: string;
   phone?: string;
   photoURL?: string;
@@ -58,8 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: data.email,
           role: data.role || "member",
           accountStatus: data.accountStatus || "pending",
+          bureauRole: data.bureauRole || "Basic Member", // Default to Basic Member if not set
           displayName: data.displayName,
-          position: data.position,
           bio: data.bio,
           phone: data.phone,
           photoURL: data.photoURL,
@@ -84,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         role,
         accountStatus: "pending", // All new users start as pending
+        bureauRole: "Basic Member", // Default bureau role
         createdAt: new Date(),
       };
       await setDoc(doc(db, "users", uid), userProfile);

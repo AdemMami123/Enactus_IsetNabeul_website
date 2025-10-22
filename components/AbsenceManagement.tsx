@@ -35,7 +35,7 @@ interface User {
   id: string;
   email: string;
   displayName: string;
-  position: string;
+  bureauRole: string;
   role: string;
   absenceCount: number;
 }
@@ -133,7 +133,7 @@ export default function AbsenceManagement() {
           id: userDoc.id,
           email: userData.email,
           displayName: userData.displayName || "No Name",
-          position: userData.position || "Member",
+          bureauRole: userData.bureauRole || "Basic Member",
           role: userData.role,
           absenceCount: absencesSnapshot.size,
         });
@@ -181,7 +181,7 @@ export default function AbsenceManagement() {
         userId: selectedUser.id,
         userName: selectedUser.displayName,
         userEmail: selectedUser.email,
-        userPosition: selectedUser.position,
+        userBureauRole: selectedUser.bureauRole,
         meetingDate: Timestamp.fromDate(new Date(meetingDate)),
         reason: reason || "No reason provided",
         markedBy: userProfile?.uid,
@@ -308,7 +308,7 @@ export default function AbsenceManagement() {
               userId: user.id,
               userName: user.displayName,
               userEmail: user.email,
-              userPosition: user.position,
+              userBureauRole: user.bureauRole,
               meetingDate: Timestamp.fromDate(new Date(bulkMeetingDate)),
               reason: attendance.reason || "No reason provided",
               markedBy: userProfile?.uid,
@@ -468,7 +468,7 @@ export default function AbsenceManagement() {
                   <option value="">Choose a member...</option>
                   {users.map((user) => (
                     <option key={user.id} value={user.id}>
-                      {user.displayName} - {user.position} (Absences: {user.absenceCount})
+                      {user.displayName} - {user.bureauRole} (Absences: {user.absenceCount})
                     </option>
                   ))}
                 </select>
@@ -608,7 +608,7 @@ export default function AbsenceManagement() {
                   Name
                 </th>
                 <th className="text-left py-3 px-4 text-gray-400 font-semibold">
-                  Position
+                  Bureau Role
                 </th>
                 <th className="text-left py-3 px-4 text-gray-400 font-semibold">
                   Role
@@ -637,7 +637,7 @@ export default function AbsenceManagement() {
                     className="border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors"
                   >
                     <td className="py-3 px-4 text-white">{user.displayName}</td>
-                    <td className="py-3 px-4 text-gray-300">{user.position}</td>
+                    <td className="py-3 px-4 text-gray-300">{user.bureauRole}</td>
                     <td className="py-3 px-4">
                       <span
                         className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
