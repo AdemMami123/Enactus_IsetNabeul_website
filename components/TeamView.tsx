@@ -43,6 +43,7 @@ export default function TeamView() {
 
   useEffect(() => {
     filterMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, roleFilter, members]);
 
   const fetchTeamMembers = async () => {

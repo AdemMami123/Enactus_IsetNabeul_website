@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { Shield, Users, Search } from "lucide-react";
 import { BureauRole } from "@/contexts/AuthContext";
 import BureauRoleManager from "@/components/BureauRoleManager";
+import Image from "next/image";
 
 interface Member {
   uid: string;
@@ -42,6 +43,7 @@ export default function BureauRoleAssignment() {
 
   useEffect(() => {
     filterMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, roleFilter, members]);
 
   const fetchMembers = async () => {
@@ -248,9 +250,11 @@ export default function BureauRoleAssignment() {
                   {/* Member Info */}
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {member.photoURL && (
-                      <img
+                      <Image
                         src={member.photoURL}
-                        alt={member.displayName}
+                        alt={member.displayName || "Member"}
+                        width={40}
+                        height={40}
                         className="w-10 h-10 rounded-full object-cover"
                       />
                     )}

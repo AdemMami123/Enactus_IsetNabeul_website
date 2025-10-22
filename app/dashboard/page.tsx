@@ -26,10 +26,6 @@ export default function DashboardPage() {
   const [profileCompletion, setProfileCompletion] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [userProfile]);
-
   const fetchDashboardData = async () => {
     try {
       // Fetch team members count
@@ -60,7 +56,7 @@ export default function DashboardPage() {
         const fields = [
           userProfile.displayName,
           userProfile.email,
-          userProfile.position,
+          userProfile.bureauRole,
           userProfile.bio,
           userProfile.phone,
           userProfile.photoURL,
@@ -75,6 +71,11 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userProfile]);
 
   const stats = [
     {
